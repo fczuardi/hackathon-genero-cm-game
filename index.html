@@ -1,0 +1,349 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+
+      button {
+        font-size: 18px;
+        padding: 10px;
+      }
+
+      p {
+        margin-bottom: 20px;
+        font-size: 22px;
+        line-height: 24px;
+      }
+
+      .card, .intro, .closure {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        border: 1px solid #ccc;
+        padding: 20px;
+        display: none;
+        opacity: 0;
+      }
+
+/*      .intro, .closure {
+        display: none;
+      }
+*/
+      .visible, .visible.wrong-answer, .visible.right-answer {
+        display: block;
+        opacity: 1;
+      }
+
+      .options ul { 
+        list-style-type: none; margin: 0; padding: 0; 
+      }
+    
+      .options ul li { 
+        padding: 25px 20px; 
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        background: #efefef;
+      }
+
+      .right-answer, .wrong-answer {
+        display: none;
+      } 
+
+      .card.right-answer .right-answer, .card.wrong-answer .wrong-answer {
+        display: block;
+      }
+
+      .card.right-answer .question, .card.wrong-answer .question, .card.right-answer .options, .card.wrong-answer .options{
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="intro">
+      <p>Introdução.</p>
+      <button class="btn-start">Começar</button>
+    </div>
+    
+    <div class="card">
+      <div class="question">
+        <p>Um adulto te oferece dinheiro ou presente 
+        para você sair com ele. O que você faz?</p>
+      </div>
+
+      <div class="options">
+        <ul>
+          <li data-right="true">Eu não aceito de forma nenhuma.</li>
+          <li>Eu aceito na hora sem pensar.</li>
+          <li>Eu aceito, isso é bem normal por aqui.</li>
+          <li>Eu aceito porque não tenho outra forma de conseguir dinheiro.</li>
+        </ul>
+      </div>
+
+      <div class="right-answer">
+        <p>Resposta correta.</p>
+        <button class="btn-next-question">Próxima pergunta</button>
+      </div>
+
+      <div class="wrong-answer">
+        <p>Resposta errada. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+        cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p> 
+        <button class="btn-back-to-question">Tentar novamente</button>
+      </div>    
+    </div>
+    
+    <div class="card">
+      <div class="question">
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+        cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </div>
+
+      <div class="options">
+        <ul>
+          <li data-right="true">Eu não aceito de forma nenhuma.</li>
+          <li>Eu aceito na hora sem pensar.</li>
+          <li>Eu aceito, isso é bem normal por aqui.</li>
+          <li>Eu aceito porque não tenho outra forma de conseguir dinheiro.</li>
+        </ul>
+      </div>
+
+      <div class="right-answer">
+        <p>Resposta correta.</p>
+        <button class="btn-next-question">Próxima pergunta</button>
+      </div>
+
+      <div class="wrong-answer">
+        <p>Resposta errada.</p> 
+        <button class="btn-back-to-question">Tentar novamente</button>
+      </div>    
+    </div>
+
+    <div class="closure">
+      <p>Encerramento.</p>
+      <button class="btn-restart">Recomeçar</button>
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+
+      var questions = [
+        {
+          question: 'Um adulto te oferece dinheiro ou alguma coisa para você sair com ele. O que você faz?',
+          answers: [
+            {
+              text: 'Eu não aceito de forma nenhuma.',
+              right: true
+            },{
+              text: 'Eu aceito na hora sem pensar.'
+            },{
+              text: 'Eu aceito, isso é bem normal por aqui.'
+            },{
+              text: 'Eu aceito porque não tenho outra forma de conseguir dinheiro.'
+            }
+          ]
+        },{
+          question: 'Um adulto te oferece dinheiro ou alguma coisa para você sair com ele. O que você faz?',
+          answers: [
+            {
+              text: 'Eu não aceito de forma nenhuma.',
+              right: true
+            },{
+              text: 'Eu aceito na hora sem pensar.'
+            },{
+              text: 'Eu aceito, isso é bem normal por aqui.'
+            },{
+              text: 'Eu aceito porque não tenho outra forma de conseguir dinheiro.'
+            }
+          ]
+        },{
+          question: 'Um adulto te oferece dinheiro ou alguma coisa para você sair com ele. O que você faz?',
+          answers: [
+            {
+              text: 'Eu não aceito de forma nenhuma.',
+              right: true
+            },{
+              text: 'Eu aceito na hora sem pensar.'
+            },{
+              text: 'Eu aceito, isso é bem normal por aqui.'
+            },{
+              text: 'Eu aceito porque não tenho outra forma de conseguir dinheiro.'
+            }
+          ]
+        }
+      ];
+
+      var client = {
+
+        //------------------------------------------------------------------
+        
+        questions: {
+
+          list: null,
+          current: 0,          
+          parent: 0
+
+        },
+
+        //------------------------------------------------------------------
+        
+        init: function() {
+          client.prepareData();
+          client.createEventListeners();
+          // client.showNextQuestion();
+          client.showIntro();
+        },
+
+        //------------------------------------------------------------------
+        
+        prepareData: function() {
+          client.questions.list = $('.card');
+        },
+
+        //------------------------------------------------------------------
+        
+        $getParentQuestion: function() {
+          return client.questions.list.eq(client.questions.parent);
+        },
+
+        //------------------------------------------------------------------
+        
+        $getCurrentQuestion: function() {
+          return client.questions.list.eq(client.questions.current);
+        },
+
+        //------------------------------------------------------------------
+        
+        hasMoreQuestions: function() {
+          return client.questions.current < client.questions.list.length;
+        },
+
+        //------------------------------------------------------------------
+        
+        showErrorMessage: function() {
+          client.$getCurrentQuestion().addClass('wrong-answer');
+        },
+
+
+        //------------------------------------------------------------------
+        
+        showSuccessMessage: function() {
+          client.$getCurrentQuestion().addClass('right-answer');
+          client.prepareNextQuestion();
+        },
+
+        //------------------------------------------------------------------
+        
+        backToCurrentQuestion: function() {
+          client.$getCurrentQuestion().removeClass('right-answer').removeClass('wrong-answer');
+        },
+
+        //------------------------------------------------------------------
+        
+        prepareNextQuestion: function() {
+          client.questions.parent = client.questions.current;
+          client.questions.current++;
+        },
+
+        //------------------------------------------------------------------
+        
+        showIntro: function() {
+          client.hideAll();
+          $('.intro').addClass('visible');
+        },
+
+        //------------------------------------------------------------------
+        
+        showClosure: function() {
+          client.hideAll();
+          $('.closure').addClass('visible');
+        },
+
+        //------------------------------------------------------------------
+        
+        restart: function() {
+          client.questions.current = 0;
+          client.hideAll();
+          client.showIntro();
+        },
+
+        //------------------------------------------------------------------
+        
+        showNextQuestion: function() {
+          client.hideAll();
+          // client.hideParentQuestion();
+
+          if( client.hasMoreQuestions() ) {
+            client.$getCurrentQuestion().addClass('visible');
+          } else {
+            client.showClosure();
+          }
+        },
+
+        //------------------------------------------------------------------
+        
+        hideAll: function() {
+          $('.visible').removeClass('visible');
+        },
+
+        //------------------------------------------------------------------
+        
+        hideParentQuestion: function() {
+          client.$getParentQuestion().removeClass('visible');
+        },
+
+        //------------------------------------------------------------------
+        
+        createEventListeners: function() {
+          $('.options li').on('click', client.onOptionClick);
+          $('.btn-back-to-question').on('click', client.backToCurrentQuestion);
+          $('.btn-next-question').on('click', client.showNextQuestion);
+          $('.btn-start').on('click', client.showNextQuestion);
+          $('.btn-restart').on('click', client.restart);
+          socket.on('answer', client.onAnswer);
+        },
+
+        //------------------------------------------------------------------
+
+        onAnswer: function(data) {  
+          if (data.itsRight) {
+            client.prepareNextQuestion();
+            client.showNextQuestion();
+
+          } else {
+            client.showErrorMessage();
+          }
+
+        },
+
+        //------------------------------------------------------------------
+
+        onOptionClick: function(event) {  
+          event.preventDefault();
+          var option = $(event.currentTarget);
+          var itsRight = !!option.data('right');
+
+          socket.emit('answer', itsRight);
+        }
+
+        //------------------------------------------------------------------
+
+      };
+
+      $(client.init);
+    </script>
+  </body>
+</html>
